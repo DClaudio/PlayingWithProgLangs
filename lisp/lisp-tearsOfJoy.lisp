@@ -122,6 +122,13 @@ A
                  (setq *seed* (cond ((oddp *seed*) (+ *seed* 2))
                      (t (1+ *seed*))))))))
 (setq fns (generate-even-odd 0))
-			
+		
+
+;Some macros again
+(defmacro defsynonym (old-name new-name)
+			"Define OLD-NAME to be equivalent to NEW-NAME  when used in the first position of a Lisp form."
+			`(defmacro ,new-name (&rest args)
+					`(, `,old-name, @args)))
+
 
 	
