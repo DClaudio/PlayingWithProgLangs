@@ -65,5 +65,42 @@
 ; this is used to create macros: programs that write programs
 
 
+;Lisp lambda functions
+((lambda (a b c n)
+	(+ (* a (* n n) ) (* b n)))
+	1 3 5 7)
+	
+; LISP macros can be anything from an abbreviation to a compiler for a new language
+; A macro has to return a form to be evaluated not a value
+(defmacro setq-literal (place literal)
+	`(setq, place ', literal))
+(defmacro reverse-cons (rest first)
+	`(cons, first, rest)) 
 
+; macroexpand will apply the macro to its arguments to produce the object code - useful for debuging
+(macroexpand '(setq-literal a b))
 
+; This macro encloses function arguments inside a coll to the special function
+; TODO: determine how to call this function
+(defmacro flambda (&rest l)
+	(list 'function (cons 'lambda l)))
+(macroexpand '(flambda (x y) (cons y x))) ;prints out the following: (FUNCTION (LAMBDA (X Y) (CONS Y X)))
+((flambda (x y) (cons y x)) 3 4) ;this is not the right way
+
+;the macro pop
+(defmacro example-pop (stack)
+	(list 'prog1 
+		(list 'car stack)
+			(list 'setq stack (list 'cdr stack))))
+;Execution example 			
+#|
+> (setq stack '(a b c))
+(A B C) 
+> (example-pop stack)
+A 
+> stack
+(B C)
+|#
+			
+
+	
