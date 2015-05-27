@@ -101,6 +101,27 @@ A
 > stack
 (B C)
 |#
+
+;; LISP clojures
+(defun generate-even (*evenum*)
+	(function 
+		(lambda()
+			(setq *evenum* (+ *evenum* 2)))))
+
+(setq gen-even-1 (generate-even 0))
+
+(defun generate-even-odd (*seed*)
+    (list
+        (function
+            (lambda()
+                (setq *seed* (cond ((evenp *seed*) (+ *seed* 2))
+                    (t (1+ *seed*))))))
+ 
+         (function
+             (lambda()
+                 (setq *seed* (cond ((oddp *seed*) (+ *seed* 2))
+                     (t (1+ *seed*))))))))
+(setq fns (generate-even-odd 0))
 			
 
 	
