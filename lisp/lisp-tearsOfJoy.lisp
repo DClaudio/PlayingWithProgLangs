@@ -131,4 +131,29 @@ A
 					`(, `,old-name, @args)))
 
 
+#|
+Object-oriented programming in Common Lisp - CLOS
+
+1. Layered system designed for flexibility - foundted on the meta-object protocol
+	- first level provides a programmatic interface to the object-oriented programming ;
+	- 2nd layer provides a functional interface into the heart of the Object System ->for very complex software problems;
+	- 3rd layer iprovides the tools for writing your own object-oriented language;
 	
+2. Based on the concept of generic functions rather than on message passing 
+
+3. Multiple inheritance 
+
+4. Powerful method combination facility
+
+5. The primary entities of the system are all first-class objects
+
+
+|#
+	
+	
+;Classes
+(defclass position () ())
+(defclass x-y-position (position)
+      ((x :initform 0)
+       (y :initform 0))
+     (:accessor-prefix position-))
