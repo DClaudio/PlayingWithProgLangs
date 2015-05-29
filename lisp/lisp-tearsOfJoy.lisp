@@ -151,9 +151,60 @@ Object-oriented programming in Common Lisp - CLOS
 |#
 	
 	
-;Classes
+;Classes - deffclass macro is part of the Object System programatic interface, on the first of the three levels of the Object System
 (defclass position () ())
 (defclass x-y-position (position)
       ((x :initform 0)
        (y :initform 0))
      (:accessor-prefix position-))
+(position-x position);to refer to the x coordinate of an instance of x-y-position
+(setf (position-x position) new-x);to alter the x coordinate of that instance
+
+;Generic functions
+#|
+	- a generic function behaviour depends on the classes or identities of the arguments supplied to it;
+	- a generic function is able to perform different serios of operations and to combine the results of the operations in diferent ways, depending 
+		on the class or identity of one or more of its arguments;
+	-  defgeneric-options macro allows for the specification of properties that pertain to the generic function as a whole, and not just to individual methods;
+	- the defmethod form is used to define a method; if no generic function of the given name exists, it automatically creates a generic function, the generic
+		function class, the method class and the method combination type;
+|#
+;Methods
+#|
+	- a method object contains a method function, an ordered set of parameter specialisers that specify when the given method is applicable and 
+		an order set of qualifiers that are used by the method combination facility to distinguish between methods
+|#
+
+(defmethod-setf position-rho ((pos x-y-position)) (rho)
+	(let* ((r (position-rho pos))
+		(ration (\ rho r)))
+		(setf (position-x pos) (* ratio (position-x pos)))
+		(setf (position-y pos) (* ratio (position-y pos)))))
+(defmethod-setf position-theta ((pos x-y-position)) (theta)
+	(let ((rho (position-rho pos)))
+		(setf (position-x pos) (* rho (cos theta)))
+		(setf (position-y pos) (* rho (sin theta)))))
+(setf (position-rho pos) new-rho) ; you can write this to update the theta coordinate
+
+;Class redefinition
+; when a defclass form is evaluated, and a class with the given name already exists, the existing class is redefined
+; you may define methods on the generic function class-changed to controll the class re redefinition process
+;Example :
+(defclass rho-theta-position (position)
+      ((rho :initform 0)
+      (theta :initform 0))
+    (:accessor-prefix position-))
+(defmethod class-changed ((old x-y-position)
+                          (new rho-theta-position))
+;; Copy the position information from old to new to make new
+;; be a rho-theta-position at the same position as old.
+     (let ((x (position-x old))
+           (y (position-y old)))
+        (setf (position-rho new) (sqrt (+ (* x x) (* y y)))
+              (position-theta new) (atan y x))))
+(change-class p1 'rho-theta-position) ;this changes an instance of the classs x-y-position to be an instance of rho-theta-position
+
+; Inheritance
+;is the key to program modularity within CLOS
+;a sub-class inherits methods in the sense that any method applicable to an instance of a class is also applicable to instances of any  sub-class
+; of that class (all other arguments to the method being the same)
