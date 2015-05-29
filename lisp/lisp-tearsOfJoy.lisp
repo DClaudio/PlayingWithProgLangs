@@ -208,3 +208,23 @@ Object-oriented programming in Common Lisp - CLOS
 ;is the key to program modularity within CLOS
 ;a sub-class inherits methods in the sense that any method applicable to an instance of a class is also applicable to instances of any  sub-class
 ; of that class (all other arguments to the method being the same)
+
+;PART 10 : Summarizing Lisp's advantages:
+#|
+	1. Lisp's functional programming advantages
+	   - mathematical approach to programming;
+	   - functions express the connection between parameters(input) and the result(output) of certain processes;
+	   - a functions does only one thing(returns a value) and is dependent of one thing(parameters passed);
+	   - a function has no side effects but you also need a small part with side effects in your program;
+	   
+	  2. Macros
+		- lisp code is made out of Lisp data objects, after it's read by the parser it's made of data structures that you can travers;
+		- if you undertand how compilers work, you'll figure out that lisp has no syntax;
+		- macros are programs that write programs;
+		
+	3. A great medium to express recursion
+		- "The power of recursion evidently lies in the possibility of defining an infinite set of objects by a finit statement;
+		- recursion is Lisp's natural computation mechanism; the primary programming activity is the creation of recursive definitions;
+		
+	
+|#
