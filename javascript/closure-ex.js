@@ -19,6 +19,19 @@ Functional Programming Languages: LISP - Scheme - Javascript
 
 */
 
+// Anonimous function example
+var displayClosure = function() {
+    var count = 0;
+    return function () {
+        return ++count;
+    };
+}
+var inc = displayClosure();
+inc(); // returns 1
+inc(); // returns 2
+inc(); // returns 3
+
+
 // Example 1
 function sayHello2(name) {
     var text = 'Hello ' + name; // Local variable
