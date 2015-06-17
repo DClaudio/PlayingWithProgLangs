@@ -19,7 +19,7 @@ bar.one // Resolves to 1.
 var buzz = Object.create(bar);
 
 
-// 2nd Example:
+// 2nd Example: - imitating classes
 var Animal = function(){
 	this.name = 'unknown';
 	this.getName = function(){
@@ -49,11 +49,12 @@ console.log(
     dog.private +"\n" // Should be: 'undefined'
 );
 
+//3rd example
+var animal = { eats: true }
+rabbit = Object.create(animal)
+alert(rabbit.eats) // true
+alert( Object.getPrototypeOf(rabbit) === animal ) // true
 
-// 3rd Example
-function Animal(name) {};
-Animal.prototype.eat = function() {};
-Animal.prototype.say = function(message) {};
 
 
 //4th example
@@ -67,7 +68,6 @@ Person.prototype = {
 	}
 }
 
-
 //5th example - with a constructor
 function Graph(){
 	this.verticles = [];
@@ -79,3 +79,4 @@ Graph.prototype = {
 	}
 }
 var g = new Graph();
+
