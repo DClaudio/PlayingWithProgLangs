@@ -1,0 +1,224 @@
+Copyright ©Flextrade UK Limited 2014 All Rights Reserved.
+The contents of this file are confidential and are intended solely for the use of the individual or entity to whom they were sent.
+No permission is granted to reproduce this file, or share it in any form, in part or whole, modified or otherwise.
+
+Code Review
+
+Systematic examination (often as peer review) of computer source code intended to find and fix 
+mistakes overlooked in the initial development phase, improving both the overall quality of 
+software and the developers' skills.
+
+The aim of this task is to examine a piece of code that your colleague has written. You must 
+critically analyse and report on the quality of the code and review it for any mistakes, bugs or 
+issues that you feel are present. You can make any comments, improvements or suggestions that you 
+feel are appropriate about style, design and logic.
+
+You can: 
+* Make inline comments in the code.
+* Add lines with suggestions or improvements. When doing this, do not add line numbers, or edit
+existing line numbers.
+
+You cannot:
+* Change any lines of code, other than to add inline comments
+* Add new line numbers or change existing line numbers
+
+Example
+1  for(Foo foo : foos) {
+2      Bar bar = foo.getBar(); // This is an inline comment.
+       // These are added lines or suggestions.
+       // Maybe we don't need to assign a variable to the Bar?
+       foo.getBar().discombobulate(); 
+3      bar.discombobulate();
+4  }
+
+There is no time or word limit but try to not spend too long completing the task. Treat it as if it
+were a real review in your day as a developer.
+
+This example is massively contrived and intentionally badly coded; don't expect code like this in 
+your day to day life.
+
+---
+Please put your comments on the code and design here:
+
+---
+   // Duplicated code in writeOutSmallOrders and writeOutLargeOrders methods
+   // To avoid code duplication I suggest writing a method that will contain the common code and call this method
+   // from both writeOutSmallOrders and writeOutLargeOrders.
+   // Another design improvement would be to include the logic that writes the orders in this class
+   // as opposed to having it in the LargeOrderFilter(more on this in the comments on LargeOrderFilter class).
+1  public class OrderManager {
+2      private final OrderStore orderStore;
+3  
+4      public OrderManager(OrderStore orderStore) {
+5          this.orderStore = orderStore;
+6      }
+7 		
+		// Two instances of DefaultOrderWriter are created in this method
+		// You can improve this by having an OrderWriter as a property and assign an instance of DefaultOrderWriter 
+		// in the constructor of the class. It is better to use OrderWriter type(the interface) for the property
+		// as you might have different implementations in the future and this will save you from
+		// changing code in multiple places.
+8      public void writeOutSmallOrders() {
+9          List<Order> orders = orderStore.getOrders();
+10         SmallOrderFilter filter = new SmallOrderFilter(new DefaultOrderWriter(), orders);
+11         filter.writeOutFiltrdAndPriceSortedOrders(new DefaultOrderWriter());
+12     }
+13 	
+		//same as above regarding the instantiation of DefaultOrderWriter
+14     public void writeOutLargeOrders() {
+15         List<Order> orders = orderStore.getOrders();
+16         LargeOrderFilter filter = new LargeOrderFilter(new DefaultOrderWriter(), orders);
+17         filter.writeOutFiltrdAndPriceSortedOrders(new DefaultOrderWriter());
+18     }
+19 }
+
+   
+    // I suggest making this class responsible only for filtering the orders. You can do this by moving the code responsible  
+	// for writing the orders in the OrderManager class(which is a better fit for this)  and have the Order class implement
+	// the Comparable interface in order to make sorting easier.
+    // Limiting the responsibility of the classes makes code easier to maintain. If this doesn't make sense I can explain more 
+    // or you can also check the SOLID principles - Single Responsibility
+1  public class LargeOrderFilter {
+2      private OrderWriter orderWriter; 
+3      private List<Order> orders;
+4  
+       // As a way to make the class more general/configurable, I suggest adding filterSize as a constructor parameter and assign it
+	   // to the filterSize property instead of assigning a hard-coded value on instantiation. This will enable you to use different instances 
+	   // of this class for filtering both large orders and small orders. You should also rename the class to OrderFilter in order reflect this change.
+5      public LargeOrderFilter(OrderWriter orderWriter, List<Order> orders) {
+6          filterSize = "100";// modify this to assign the value from the constructor parameter as described above
+7          this.orderWriter = orderWriter;
+8          this.orders = orders;
+9      }
+10 	// It's better move this declaration with the other properties declarations for better readability.
+11     protected String filterSize;// It would be better if this would be of type int so you don't need to convert it 
+12 
+		// I suggest removing this method and move the write and filter order logic in the OrderManager class - see class comments above.
+13     public void writeOutFiltrdAndPriceSortedOrders(OrderWriter writer) {
+14         List<Order> filteredOrders = this.filterOrdersSmallerThan(orders, filterSize);
+15         Collections.sort(filteredOrders, new Comparator() {
+16                 @Override
+					// You should check if o1 and o2 objects are instances of Order before performing the cast.
+					// A ClassCastException exception will be thrown if the objects can't be cast to Order type.
+					// There is the possibility of getting a NullPointerException if o1 or o2 references are null.
+					// To avoid this, check if o1 and o2 are null.
+17                 public int compare(Object o1, Object o2) { 
+18                     Order order1 = (Order)o1;  
+19                     Order order2 = (Order)o2;
+						// When casting a double to an int, the number will be rounded down.
+						// This means the code bellow doesn't work as expected when the 
+						// difference between the order prices is in (-1, 1) interval, it will return 0.
+						// A simple solution would be to compare the two values in an if statement and return 
+						// negative value, 0 or positive value as required for the compare method.
+20                     return (int)(order1.getPrice() - order2.getPrice());
+21                 }
+22             });
+23         writer.writeOrders(filteredOrders);
+24     }
+25 	
+		// It would be better to make this method public to allow it to be accessed from OrderManager class.
+		// I would also suggest to use the filterSize property instead of size parameter or, if you want to use the size parameter,
+		// it would be better to change the type  to int and remove the filterSize property from the class. 
+26    protected List<Order> filterOrdersSmallerThan(List<Order> allOrders, String size) {
+27         List<Order> filtered = new ArrayList<Order>();
+28         for (int i = 0; i <= allOrders.size(); i++) {
+29             int number = orders.get(i).toNumber(size);//not needed if size/filterSize is of int type
+30 		// This code actually filters orders larger than a certain size which is not what the method name suggests.
+			// To fix it, replace the "continue" statement with the code that adds the order to the filtered list.
+			// As a result of this change, the else branch will not be required.
+31             if (allOrders.get(i).getSize() <= number) {
+32                 continue;
+33             } else {
+34                 filtered.add(orders.get(i));
+35             }
+36         }
+37 
+38         return filtered;
+39     }
+40 }
+	
+   // As per the suggestions above you should remove this class as the functionality 
+   // can be easily covered in the class above by making it more configurable
+1  public class SmallOrderFilter extends LargeOrderFilter
+2  {
+3      public SmallOrderFilter(OrderWriter orderWriter, List<Order> orders) {
+4          super(orderWriter, orders);
+5          filterSize = "10";
+6      }
+7  }
+
+// I suggest renaming the proprieties as price, size, symbol and use "this" keyword in setters (ex: this.price = price )
+// This will make to code easy to read and adhere to the coding standards/conventions.
+// I also suggest having this class implement the Comparable interface to provide a way of sorting the orders consistently from multiple places. 
+1  public class Order
+2  {
+3      private double dPrice;
+4      private int iSize;
+5      private String sSymbol;
+6      
+7      public double getPrice() {
+8          return dPrice;
+9      }
+10     
+11     public void setPrice(double price) {
+12         dPrice = price;
+13     }
+14 
+15     public int getSize() {
+16         return iSize;
+17     }
+18     
+19     public void setSize(int size) {
+20         iSize = size;
+21     }
+22 
+23     public String getSymbol() {
+24         return sSymbol;
+25     }
+26     
+27     public void setSymbol(String symbol) {
+28         sSymbol = symbol;
+29     }
+30     
+		// As suggested above in the LargeOrderFilter class, you don't need this method if you declare filterSize property as int 
+		// Obs: If the method was actually needed, placing it in the Order would not be the best way to do it 
+		// because it doesn't do anything specific to the Order class. it just converts a String to an int.
+31     public int toNumber(String Input) {
+32         boolean canBeConverted = false;
+33         int n = 0;
+34         try // this formatting is not consistent with the rest of the code
+35         {
+36             n = Integer.parseInt(Input);
+37             canBeConverted = true;
+38         }
+39         catch (Exception ex)// Exception is too broad, you should catch NumberFormatException instead
+40         {
+				// it's usually not recommended to leave the body of the catch block empty
+				// One solution is to throw another exception that will have to be handled by the calling code
+41         }
+42 
+			// You could just return n here as it will have the value 0 if the conversion to int fails.
+			// canBeConverted variable will not needed in this case.
+43         if (canBeConverted == true) {
+44             return n;
+45         } else {
+46             return 0;
+47        }
+48     }
+49 }
+
+
+// These are interfaces / stubs that already exist in the system.
+// They're out of scope of the code review.
+
+public interface OrderWriter {
+    void writeOrders(Collection<Order> orders);
+}
+
+public class DefaultOrderWriter implements OrderWriter {
+    public void writeOrders(Collection<Order> orders) {}
+}
+
+public interface OrderStore {
+    List<Order> getOrders();
+}
